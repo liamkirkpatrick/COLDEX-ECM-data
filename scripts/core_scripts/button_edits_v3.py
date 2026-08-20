@@ -60,7 +60,7 @@ def normalize_section_for_lookup(section_value):
     return str(section_value).strip()
 
 
-def format_note_title(note, wrap_interval=30):
+def format_note_title(note, wrap_interval=45):
     note_text = str(note).strip()
     text = f"Note: {note_text}" if note_text else "Note:"
     parts = []
@@ -362,7 +362,7 @@ def process_ecm(entry, entry_number, total_entries):
                 f"track {current_idx + 1} of {len(y_values)} (Y={current_y}); "
                 f"drag mode: {active_mark}; file {entry_number} of {total_entries}"
             ),
-            y=0.98
+            y=0.995
         )
 
     def recompute_mark_columns(y_value):

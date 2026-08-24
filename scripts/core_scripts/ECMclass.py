@@ -203,7 +203,7 @@ class ECM:
                 strack_idx = self.y_s == ytrack
                 self.meas_s[strack_idx] = self.meas_s[strack_idx] * norm / track_ave
                 
-            print(norm/track_ave)
+            #print(norm/track_ave)
             
     # normalize all tracks
     def norm_all(self):

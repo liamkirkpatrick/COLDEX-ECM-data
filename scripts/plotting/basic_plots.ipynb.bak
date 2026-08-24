@@ -10,7 +10,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 27,
+   "execution_count": 1,
    "id": "ff41471a",
    "metadata": {},
    "outputs": [],
@@ -43,7 +43,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 28,
+   "execution_count": 2,
    "id": "00851d87",
    "metadata": {},
    "outputs": [],
@@ -54,14 +54,14 @@
     "# paths\n",
     "global path_to_data, path_to_figures, path_to_metadata, metadata_file\n",
     "path_to_data = '../../data/'\n",
-    "path_to_figures = '../../figures/basic_plots/'\n",
+    "path_to_figures = '../../figures/'\n",
     "path_to_metadata = '../../data/'\n",
     "metadata_file = 'metadata.csv'"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 29,
+   "execution_count": 3,
    "id": "4f58efce",
    "metadata": {},
    "outputs": [],
@@ -86,12 +86,12 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 30,
-   "id": "8909473f",
+   "execution_count": null,
+   "id": "6b3d4b7c",
    "metadata": {},
    "outputs": [],
    "source": [
-    "def plotquarter(y_vec,ycor,d,meas,surface_imperfection,tephra_or_layer,rock_or_debris,axs,rescale,res = 0.002):\n",
+    "def plotquarter(y_vec,ycor,d,meas,button,axs,rescale,res = 0.002):\n",
     "    \n",
     "    width = y_vec[1] - y_vec[0]\n",
     "    \n",
@@ -100,9 +100,7 @@
     "        idx = ycor==y\n",
     "        \n",
     "        tmeas = meas[idx]\n",
-    "        tsurface_imperfection = surface_imperfection[idx]\n",
-    "        ttephra_or_layer = tephra_or_layer[idx]\n",
-    "        trock_or_debris = rock_or_debris[idx]\n",
+    "        tbut = button[idx]\n",
     "        tycor = ycor[idx]\n",
     "        td = d[idx]\n",
     "\n",
@@ -111,111 +109,24 @@
     "        int_hi = round(max(td),2)\n",
     "        depth_interp = np.linspace(int_lo,int_hi,int((int_hi-int_lo)/res)+1)\n",
     "        meas_interp = np.interp(depth_interp,np.flip(td),np.flip(tmeas))\n",
-    "        surface_imperfection_interp = np.interp(depth_interp,np.flip(td),np.flip(tsurface_imperfection))\n",
-    "        tephra_or_layer_interp = np.interp(depth_interp,np.flip(td),np.flip(ttephra_or_layer))\n",
-    "        rock_or_debris_interp = np.interp(depth_interp,np.flip(td),np.flip(trock_or_debris))\n",
+    "        but_interp = np.interp(depth_interp,np.flip(td),np.flip(tbut))\n",
     "        td = depth_interp\n",
     "        tmeas = meas_interp\n",
-    "        tsurface_imperfection = np.round(surface_imperfection_interp)\n",
-    "        ttephra_or_layer = np.round(tephra_or_layer_interp)\n",
-    "        trock_or_debris = np.round(rock_or_debris_interp)\n",
-    "\n",
-    "        x0 = y-(width-0.2)/2\n",
-    "        track_width = width-0.2\n",
-    "\n",
-    "        # Base ECM (and surface imperfection masking) pass\n",
+    "        tbut = np.round(but_interp)\n",
+    "        \n",
     "        for i in range(len(tmeas)-1):\n",
     "            \n",
-    "            if tsurface_imperfection[i] == 0:        \n",
-    "                axs.add_patch(Rectangle((x0,td[i]),track_width,td[i+1]-td[i],facecolor=my_cmap(rescale(tmeas[i]))))\n",
+    "            if tbut[i] == 0:        \n",
+    "                axs.add_patch(Rectangle((y-(width-0.2)/2,td[i]),(width-0.2),td[i+1]-td[i],facecolor=my_cmap(rescale(tmeas[i]))))\n",
     "            else:\n",
-    "                axs.add_patch(Rectangle((x0,td[i]),track_width,td[i+1]-td[i],facecolor='k'))\n",
-    "\n",
-    "        # Overlay pass for contiguous tephra/layer and rock/debris regions\n",
-    "        def add_contiguous_regions(mask, draw_region):\n",
-    "            run_start = None\n",
-    "            for i, is_on in enumerate(mask):\n",
-    "                if is_on and run_start is None:\n",
-    "                    run_start = i\n",
-    "                elif not is_on and run_start is not None:\n",
-    "                    draw_region(run_start, i - 1)\n",
-    "                    run_start = None\n",
-    "            if run_start is not None:\n",
-    "                draw_region(run_start, len(mask) - 1)\n",
-    "\n",
-    "        tephra_mask = ttephra_or_layer[:-1] == 1\n",
-    "        rock_mask = trock_or_debris[:-1] == 1\n",
-    "\n",
-    "        def draw_tephra_region(i0, i1):\n",
-    "            axs.add_patch(\n",
-    "                Rectangle(\n",
-    "                    (x0, td[i0]),\n",
-    "                    track_width,\n",
-    "                    td[i1 + 1] - td[i0],\n",
-    "                    facecolor='none',\n",
-    "                    edgecolor='purple',\n",
-    "                    hatch='xx',\n",
-    "                    linewidth=0\n",
-    "                )\n",
-    "            )\n",
-    "\n",
-    "        \n",
-    "        def draw_rock_region(i0, i1):\n",
-    "            axs.add_patch(\n",
-    "                Rectangle(\n",
-    "                    (x0, td[i0]),\n",
-    "                    track_width,\n",
-    "                    td[i1 + 1] - td[i0],\n",
-    "                    facecolor='none',\n",
-    "                    edgecolor='black',\n",
-    "                    hatch='oo',\n",
-    "                    linewidth=0\n",
-    "                )\n",
-    "            )\n",
-    "\n",
-    "        # def draw_rock_region(i0, i1):\n",
-    "        #     y0 = td[i0]\n",
-    "        #     y1 = td[i1 + 1]\n",
-    "        #     y_spacing = max(res * 4, 0.008)\n",
-    "        #     y_pts = np.arange(y0, y1, y_spacing)\n",
+    "                axs.add_patch(Rectangle((y-(width-0.2)/2,td[i]),(width-0.2),td[i+1]-td[i],facecolor='k'))\n",
     "            \n",
-    "        #     if len(y_pts) == 0:\n",
-    "        #         y_pts = np.array([(y0 + y1) / 2])\n",
-    "\n",
-    "        #     # 4 columns across the track (instead of 2), with slight random x jitter\n",
-    "        #     x_base = np.linspace(x0 + 0.15 * track_width, x0 + 0.85 * track_width, 4)\n",
-    "        #     xx, yy = np.meshgrid(x_base, y_pts)\n",
-    "\n",
-    "        #     rng = np.random.default_rng()\n",
-    "        #     jitter_span = 0.04 * abs(track_width)\n",
-    "        #     x_min = min(x0 + 0.05 * track_width, x0 + 0.95 * track_width)\n",
-    "        #     x_max = max(x0 + 0.05 * track_width, x0 + 0.95 * track_width)\n",
-    "        #     jitter = rng.uniform(-jitter_span, jitter_span, size=xx.shape) if jitter_span > 0 else 0\n",
-    "        #     x_jittered = np.clip(\n",
-    "        #     xx + jitter,\n",
-    "        #     x_min,\n",
-    "        #     x_max\n",
-    "        #     )\n",
-    "\n",
-    "        #     axs.scatter(\n",
-    "        #     x_jittered.ravel(),\n",
-    "        #     yy.ravel(),\n",
-    "        #     c='k',\n",
-    "        #     s=12,  # 50% smaller than previous s=24\n",
-    "        #     marker='o',\n",
-    "        #     linewidths=0,\n",
-    "        #     zorder=5\n",
-    "        #     )\n",
-    "\n",
-    "        add_contiguous_regions(tephra_mask, draw_tephra_region)\n",
-    "        add_contiguous_regions(rock_mask, draw_rock_region)\n",
-    "\n",
     "    return()"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 31,
+   "execution_count": 6,
    "id": "8e3a9e8b",
    "metadata": {},
    "outputs": [],
@@ -286,16 +197,10 @@
     "                            AC_all.extend(data_face.meas[mask])\n",
     "                        else:\n",
     "                            DC_all.extend(data_face.meas[mask])\n",
-    "                    if len(DC_all) == 0:\n",
-    "                        DCpltmin, DCpltmax = np.nan, np.nan   # or sensible defaults / skip plotting\n",
-    "                    else:\n",
-    "                        DCpltmin = np.percentile(DC_all, 5)\n",
-    "                        DCpltmax = np.percentile(DC_all, 95)\n",
-    "                    if len(AC_all) == 0:\n",
-    "                        ACpltmin, ACpltmax = np.nan, np.nan   # or sensible defaults / skip plotting\n",
-    "                    else:  \n",
-    "                        ACpltmin = np.percentile(AC_all,5)\n",
-    "                        ACpltmax = np.percentile(AC_all,95)\n",
+    "                    ACpltmin = np.percentile(AC_all,5)\n",
+    "                    ACpltmax = np.percentile(AC_all,95)\n",
+    "                    DCpltmin = np.percentile(DC_all,5)\n",
+    "                    DCpltmax = np.percentile(DC_all,95)  \n",
     "                    ACrescale = lambda k: (k-ACpltmin) /  (ACpltmax-ACpltmin)\n",
     "                    DCrescale = lambda k: (k-DCpltmin) /  (DCpltmax-DCpltmin)\n",
     "        \n",
@@ -324,19 +229,6 @@
     "                    DCcbar = fig.colorbar(matplotlib.cm.ScalarMappable(norm=DCnorm, cmap=my_cmap),cax=DCcbar_ax,\n",
     "                                orientation='horizontal',label='Current (amps)')\n",
     "\n",
-    "                    # add a key on the right for surface imperfections, tephra/layers, and rock/debris\n",
-    "                    key_ax = fig.add_axes([1,0.1,0.05,0.8])\n",
-    "                    key_ax.add_patch(Rectangle((0,0.8),1,0.1,facecolor='k'))\n",
-    "                    key_ax.text(1.2,0.85,'Surface Imperfection',fontsize=10,verticalalignment='center')\n",
-    "                    key_ax.add_patch(Rectangle((0,0.6),1,0.1,facecolor='none',edgecolor='purple',hatch='xx',linewidth=0))\n",
-    "                    key_ax.text(1.2,0.65,'Tephra/Layer',fontsize=10,verticalalignment='center')\n",
-    "                    # now add patch with black dots for rock/debris\n",
-    "                    key_ax.add_patch(Rectangle((0,0.4),1,0.1,facecolor='none',edgecolor='k',hatch='oo',linewidth=0))\n",
-    "                    key_ax.text(1.2,0.45,'Rock/Debris',fontsize=10,verticalalignment='center')\n",
-    "                    # move axis ticks off the key axis\n",
-    "                    key_ax.set_xticks([])\n",
-    "                    key_ax.set_yticks([])\n",
-    "                    \n",
     "\n",
     "                    # save figure\n",
     "                    fname = path_to_figures+core+'/'+core+'-'+section+'.png'\n",
@@ -354,7 +246,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 32,
+   "execution_count": 7,
    "id": "a3f339a3",
    "metadata": {},
    "outputs": [],
@@ -402,7 +294,7 @@
     "\n",
     "    for a,data_face in zip([axs[0],axs[1],axs[3],axs[4]],[AC_r,AC_t,DC_r,DC_t]):\n",
     "        \n",
-    "        if data_face != None and len(data_face.y_vec) > 1:\n",
+    "        if data_face != None:\n",
     "            if data_face.face == 'r':\n",
     "                yall = data_face.y_s - data_face.y_left\n",
     "                yvec = data_face.y_vec - data_face.y_left\n",
@@ -421,9 +313,7 @@
     "                        yall,\n",
     "                        data_face.depth_s,\n",
     "                        data_face.meas_s,\n",
-    "                        data_face.surface_imperfection_s,\n",
-    "                        data_face.tephra_or_layer_s,\n",
-    "                        data_face.rock_or_debris_s,\n",
+    "                        data_face.button_s,\n",
     "                        a,\n",
     "                        rescale)\n",
     "\n",
@@ -432,7 +322,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 33,
+   "execution_count": 8,
    "id": "6c32abcc",
    "metadata": {},
    "outputs": [],
@@ -479,7 +369,7 @@
     "\n",
     "    for a,data_face in zip([axs[1],axs[0],axs[4],axs[3]],[AC_l,AC_t,DC_l,DC_t]):\n",
     "        \n",
-    "        if data_face != None and len(data_face.y_vec) > 1:\n",
+    "        if data_face != None:\n",
     "            if data_face.face == 'l':\n",
     "                yall = data_face.y_right - data_face.y_s\n",
     "                yvec = data_face.y_right -  data_face.y_vec\n",
@@ -493,14 +383,12 @@
     "                rescale = DCrescale\n",
     "        \n",
     "        \n",
-    "             # plot data\n",
+    "            # plot data\n",
     "            plotquarter(yvec,\n",
     "                        yall,\n",
     "                        data_face.depth_s,\n",
     "                        data_face.meas_s,\n",
-    "                        data_face.surface_imperfection_s,\n",
-    "                        data_face.tephra_or_layer_s,\n",
-    "                        data_face.rock_or_debris_s,\n",
+    "                        data_face.button_s,\n",
     "                        a,\n",
     "                        rescale)\n",
     "\n",
@@ -509,7 +397,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 34,
+   "execution_count": 9,
    "id": "403f7e7b",
    "metadata": {},
    "outputs": [],
@@ -555,7 +443,7 @@
     "\n",
     "    for a,data_face in zip([axs[0],axs[1],axs[3],axs[4]],[AC_w2,AC_w1,DC_w2,DC_w1]):\n",
     "        \n",
-    "        if data_face != None and len(data_face.y_vec) > 1:\n",
+    "        if data_face != None:\n",
     "            if data_face.face == 'w2':\n",
     "                yall = data_face.y_s - data_face.y_left\n",
     "                yvec = data_face.y_vec - data_face.y_left\n",
@@ -573,9 +461,7 @@
     "                        yall,\n",
     "                        data_face.depth_s,\n",
     "                        data_face.meas_s,\n",
-    "                        data_face.surface_imperfection_s,\n",
-    "                        data_face.tephra_or_layer_s,\n",
-    "                        data_face.rock_or_debris_s,\n",
+    "                        data_face.button_s,\n",
     "                        a,\n",
     "                        rescale)\n",
     "\n",
@@ -584,7 +470,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 35,
+   "execution_count": 10,
    "id": "7aebc211",
    "metadata": {},
    "outputs": [],
@@ -615,7 +501,7 @@
     "        \n",
     "    for a,data_face in zip([axs[0],axs[2]],[AC_w1,DC_w1]):\n",
     "        \n",
-    "        if data_face != None and len(data_face.y_vec) > 1:\n",
+    "        if data_face != None:\n",
     "\n",
     "            yall = data_face.y_right - data_face.y_s\n",
     "            yvec = data_face.y_right - data_face.y_vec\n",
@@ -630,9 +516,7 @@
     "                        yall,\n",
     "                        data_face.depth_s,\n",
     "                        data_face.meas_s,\n",
-    "                        data_face.surface_imperfection_s,\n",
-    "                        data_face.tephra_or_layer_s,\n",
-    "                        data_face.rock_or_debris_s,\n",
+    "                        data_face.button_s,\n",
     "                        a,\n",
     "                        rescale)\n",
     "\n",
@@ -647,8 +531,8 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
-   "id": "7cad63c2",
+   "execution_count": 11,
+   "id": "89172e82",
    "metadata": {},
    "outputs": [
     {
@@ -661,12 +545,29 @@
     {
      "data": {
       "application/vnd.jupyter.widget-view+json": {
-       "model_id": "b706f9d4708046dfac3b66e5787a7fde",
+       "model_id": "a9cfe77111ed4fd3b56ff7d6cfec189c",
        "version_major": 2,
        "version_minor": 0
       },
       "text/plain": [
-       "ALHIC2501: starting:   0%|          | 0/189 [00:00<?, ?section/s]"
+       "ALHIC2201: starting:   0%|          | 0/23 [00:00<?, ?section/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/var/folders/b3/ghp5pyzj7_x9mhrs3x202bm80000gn/T/ipykernel_8744/3196738039.py:86: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.\n",
+      "  fig.tight_layout()\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<Figure size 640x480 with 0 Axes>"
       ]
      },
      "metadata": {},
@@ -674,27 +575,66 @@
     }
    ],
    "source": [
-    "plot_basic('ALHIC2501')"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "89172e82",
-   "metadata": {},
-   "outputs": [],
-   "source": [
     "plot_basic('ALHIC2201')"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 12,
    "id": "922082e3",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "../../data/\n"
+     ]
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "4d636a73e00747e2898f09ada44782d1",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "ALHIC2301: starting:   0%|          | 0/41 [00:00<?, ?section/s]"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "ename": "IndexError",
+     "evalue": "index -1 is out of bounds for axis 0 with size 0",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[31m---------------------------------------------------------------------------\u001b[39m",
+      "\u001b[31mIndexError\u001b[39m                                Traceback (most recent call last)",
+      "\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[12]\u001b[39m\u001b[32m, line 1\u001b[39m\n\u001b[32m----> \u001b[39m\u001b[32m1\u001b[39m plot_basic(\u001b[33m'ALHIC2301'\u001b[39m)\n",
+      "\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[6]\u001b[39m\u001b[32m, line 69\u001b[39m, in \u001b[36mplot_basic\u001b[39m\u001b[34m(core)\u001b[39m\n\u001b[32m     65\u001b[39m                         \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[32m     66\u001b[39m                             DC_all.extend(data_face.meas[mask])\n\u001b[32m     67\u001b[39m                     ACpltmin = np.percentile(AC_all,\u001b[32m5\u001b[39m)\n\u001b[32m     68\u001b[39m                     ACpltmax = np.percentile(AC_all,\u001b[32m95\u001b[39m)\n\u001b[32m---> \u001b[39m\u001b[32m69\u001b[39m                     DCpltmin = np.percentile(DC_all,\u001b[32m5\u001b[39m)\n\u001b[32m     70\u001b[39m                     DCpltmax = np.percentile(DC_all,\u001b[32m95\u001b[39m)\n\u001b[32m     71\u001b[39m                     ACrescale = \u001b[38;5;28;01mlambda\u001b[39;00m k: (k-ACpltmin) /  (ACpltmax-ACpltmin)\n\u001b[32m     72\u001b[39m                     DCrescale = \u001b[38;5;28;01mlambda\u001b[39;00m k: (k-DCpltmin) /  (DCpltmax-DCpltmin)\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~/anaconda3/envs/COLDEX_ECM/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:4292\u001b[39m, in \u001b[36mpercentile\u001b[39m\u001b[34m(a, q, axis, out, overwrite_input, method, keepdims, weights, interpolation)\u001b[39m\n\u001b[32m   4289\u001b[39m     \u001b[38;5;28;01mif\u001b[39;00m np.any(weights < \u001b[32m0\u001b[39m):\n\u001b[32m   4290\u001b[39m         \u001b[38;5;28;01mraise\u001b[39;00m \u001b[38;5;167;01mValueError\u001b[39;00m(\u001b[33m\"\u001b[39m\u001b[33mWeights must be non-negative.\u001b[39m\u001b[33m\"\u001b[39m)\n\u001b[32m-> \u001b[39m\u001b[32m4292\u001b[39m \u001b[38;5;28;01mreturn\u001b[39;00m \u001b[30;43m_quantile_unchecked\u001b[39;49m\u001b[30;43m(\u001b[39;49m\n\u001b[32m   4293\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43ma\u001b[39;49m\u001b[30;43m,\u001b[39;49m\u001b[30;43m \u001b[39;49m\u001b[30;43mq\u001b[39;49m\u001b[30;43m,\u001b[39;49m\u001b[30;43m \u001b[39;49m\u001b[30;43maxis\u001b[39;49m\u001b[30;43m,\u001b[39;49m\u001b[30;43m \u001b[39;49m\u001b[30;43mout\u001b[39;49m\u001b[30;43m,\u001b[39;49m\u001b[30;43m \u001b[39;49m\u001b[30;43moverwrite_input\u001b[39;49m\u001b[30;43m,\u001b[39;49m\u001b[30;43m \u001b[39;49m\u001b[30;43mmethod\u001b[39;49m\u001b[30;43m,\u001b[39;49m\u001b[30;43m \u001b[39;49m\u001b[30;43mkeepdims\u001b[39;49m\u001b[30;43m,\u001b[39;49m\u001b[30;43m \u001b[39;49m\u001b[30;43mweights\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~/anaconda3/envs/COLDEX_ECM/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:4569\u001b[39m, in \u001b[36m_quantile_unchecked\u001b[39m\u001b[34m(a, q, axis, out, overwrite_input, method, keepdims, weights)\u001b[39m\n\u001b[32m   4560\u001b[39m \u001b[38;5;28;01mdef\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[34m_quantile_unchecked\u001b[39m(a,\n\u001b[32m   4561\u001b[39m                         q,\n\u001b[32m   4562\u001b[39m                         axis=\u001b[38;5;28;01mNone\u001b[39;00m,\n\u001b[32m   (...)\u001b[39m\u001b[32m   4566\u001b[39m                         keepdims=\u001b[38;5;28;01mFalse\u001b[39;00m,\n\u001b[32m   4567\u001b[39m                         weights=\u001b[38;5;28;01mNone\u001b[39;00m):\n\u001b[32m   4568\u001b[39m \u001b[38;5;250m    \u001b[39m\u001b[33;03m\"\"\"Assumes that q is in [0, 1], and is an ndarray\"\"\"\u001b[39;00m\n\u001b[32m-> \u001b[39m\u001b[32m4569\u001b[39m     \u001b[38;5;28;01mreturn\u001b[39;00m \u001b[30;43m_ureduce\u001b[39;49m\u001b[30;43m(\u001b[39;49m\u001b[30;43ma\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4570\u001b[39m \u001b[30;43m                    \u001b[39;49m\u001b[30;43mfunc\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43m_quantile_ureduce_func\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4571\u001b[39m \u001b[30;43m                    \u001b[39;49m\u001b[30;43mq\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mq\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4572\u001b[39m \u001b[30;43m                    \u001b[39;49m\u001b[30;43mweights\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mweights\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4573\u001b[39m \u001b[30;43m                    \u001b[39;49m\u001b[30;43mkeepdims\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mkeepdims\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4574\u001b[39m \u001b[30;43m                    \u001b[39;49m\u001b[30;43maxis\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43maxis\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4575\u001b[39m \u001b[30;43m                    \u001b[39;49m\u001b[30;43mout\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mout\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4576\u001b[39m \u001b[30;43m                    \u001b[39;49m\u001b[30;43moverwrite_input\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43moverwrite_input\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4577\u001b[39m \u001b[30;43m                    \u001b[39;49m\u001b[30;43mmethod\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mmethod\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~/anaconda3/envs/COLDEX_ECM/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:3914\u001b[39m, in \u001b[36m_ureduce\u001b[39m\u001b[34m(a, func, keepdims, **kwargs)\u001b[39m\n\u001b[32m   3911\u001b[39m     index_out = (\u001b[32m0\u001b[39m, ) * nd\n\u001b[32m   3912\u001b[39m     kwargs[\u001b[33m'\u001b[39m\u001b[33mout\u001b[39m\u001b[33m'\u001b[39m] = out[(\u001b[38;5;28mEllipsis\u001b[39m, ) + index_out]\n\u001b[32m-> \u001b[39m\u001b[32m3914\u001b[39m r = \u001b[30;43mfunc\u001b[39;49m\u001b[30;43m(\u001b[39;49m\u001b[30;43ma\u001b[39;49m\u001b[30;43m,\u001b[39;49m\u001b[30;43m \u001b[39;49m\u001b[30;43m*\u001b[39;49m\u001b[30;43m*\u001b[39;49m\u001b[30;43mkwargs\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n\u001b[32m   3916\u001b[39m \u001b[38;5;28;01mif\u001b[39;00m out \u001b[38;5;129;01mis\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;28;01mNone\u001b[39;00m:\n\u001b[32m   3917\u001b[39m     \u001b[38;5;28;01mreturn\u001b[39;00m out\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~/anaconda3/envs/COLDEX_ECM/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:4744\u001b[39m, in \u001b[36m_quantile_ureduce_func\u001b[39m\u001b[34m(a, q, weights, axis, out, overwrite_input, method)\u001b[39m\n\u001b[32m   4742\u001b[39m     arr = a.copy()\n\u001b[32m   4743\u001b[39m     wgt = weights\n\u001b[32m-> \u001b[39m\u001b[32m4744\u001b[39m result = \u001b[30;43m_quantile\u001b[39;49m\u001b[30;43m(\u001b[39;49m\u001b[30;43marr\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4745\u001b[39m \u001b[30;43m                   \u001b[39;49m\u001b[30;43mquantiles\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mq\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4746\u001b[39m \u001b[30;43m                   \u001b[39;49m\u001b[30;43maxis\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43maxis\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4747\u001b[39m \u001b[30;43m                   \u001b[39;49m\u001b[30;43mmethod\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mmethod\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4748\u001b[39m \u001b[30;43m                   \u001b[39;49m\u001b[30;43mout\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mout\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m   4749\u001b[39m \u001b[30;43m                   \u001b[39;49m\u001b[30;43mweights\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mwgt\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n\u001b[32m   4750\u001b[39m \u001b[38;5;28;01mreturn\u001b[39;00m result\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~/anaconda3/envs/COLDEX_ECM/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:4866\u001b[39m, in \u001b[36m_quantile\u001b[39m\u001b[34m(arr, quantiles, axis, method, out, weights)\u001b[39m\n\u001b[32m   4859\u001b[39m arr.partition(\n\u001b[32m   4860\u001b[39m     np.unique(np.concatenate(([\u001b[32m0\u001b[39m, -\u001b[32m1\u001b[39m],\n\u001b[32m   4861\u001b[39m                               previous_indexes.ravel(),\n\u001b[32m   4862\u001b[39m                               next_indexes.ravel(),\n\u001b[32m   4863\u001b[39m                               ))),\n\u001b[32m   4864\u001b[39m     axis=\u001b[32m0\u001b[39m)\n\u001b[32m   4865\u001b[39m \u001b[38;5;28;01mif\u001b[39;00m supports_nans:\n\u001b[32m-> \u001b[39m\u001b[32m4866\u001b[39m     slices_having_nans = np.isnan(\u001b[30;43marr\u001b[39;49m\u001b[30;43m[\u001b[39;49m\u001b[30;43m-\u001b[39;49m\u001b[30;43m1\u001b[39;49m\u001b[30;43m,\u001b[39;49m\u001b[30;43m \u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43m]\u001b[39;49m)\n\u001b[32m   4867\u001b[39m \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[32m   4868\u001b[39m     slices_having_nans = \u001b[38;5;28;01mNone\u001b[39;00m\n",
+      "\u001b[31mIndexError\u001b[39m: index -1 is out of bounds for axis 0 with size 0"
+     ]
+    }
+   ],
+   "source": [
+    "plot_basic('ALHIC2301')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ce3b885e",
    "metadata": {},
    "outputs": [],
    "source": [
-    "plot_basic('ALHIC2301')"
+    "plot_basic('ALHIC2302')"
    ]
   },
   {
@@ -710,11 +650,21 @@
   {
    "cell_type": "code",
    "execution_count": null,
-   "id": "ce3b885e",
+   "id": "7cad63c2",
    "metadata": {},
    "outputs": [],
    "source": [
-    "plot_basic('ALHIC2302')"
+    "plot_basic('ALHIC2501')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "5657d2db",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plot_basic('PICO2303')"
    ]
   }
  ],

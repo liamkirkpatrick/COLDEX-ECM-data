@@ -12,10 +12,6 @@ import pandas as pd
 import numpy as np
 import math
 
-#%% User inputs
-
-#path_to_data = '../../data/'
-#metadata = 'metadata.csv'
 
 #%% Define ECM Class
 
@@ -29,7 +25,6 @@ class ECM:
         row = row.loc[row['section']==section]
         row = row.loc[row['face']==face]
         row = row.loc[row['ACorDC']==ACorDC]
-        
         
         # assign core components
         self.time = row['time'].values[0]
@@ -47,7 +42,8 @@ class ECM:
         # assign vectors
         self.meas = raw['meas'].to_numpy()
         self.y = raw['Y_dimension(mm)'].to_numpy()
-        self.button = raw['Button'].to_numpy()
+        button_column = 'Button' if 'Button' in raw.columns else 'button'
+        self.button = raw[button_column].to_numpy()
         self.depth = raw['True_depth(m)'].to_numpy()
         self.y_vec = np.unique(self.y)
         if 'button_raw' in raw.columns:

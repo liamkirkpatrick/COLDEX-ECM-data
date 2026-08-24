@@ -46,10 +46,18 @@ class ECM:
         self.button = raw[button_column].to_numpy()
         self.depth = raw['True_depth(m)'].to_numpy()
         self.y_vec = np.unique(self.y)
-        if 'button_raw' in raw.columns:
-            self.button_raw = raw['button_raw'].to_numpy()
+        # if 'button_raw' in raw.columns:
+        #     self.button_raw = raw['button_raw'].to_numpy()
+        # else:
+        #     self.button_raw = None
+        if 'tephra_or_layer' in raw.columns:
+            self.tephra_or_layer = raw['tephra_or_layer'].to_numpy()
+            self.surface_imperfection = raw['surface_imperfection'].to_numpy()
+            self.rock_or_debris = raw['rock_or_debris'].to_numpy()
         else:
-            self.button_raw = None
+            self.tephra_or_layer = np.zeros_like(self.button, dtype=float)
+            self.surface_imperfection = self.button # copy button if button edits not yet run
+            self.rock_or_debris = np.zeros_like(self.button, dtype=float)
             
         # remove tracks that are incomplete
         lenth = []
@@ -66,6 +74,9 @@ class ECM:
                 self.y_vec = self.y_vec[self.y_vec!=y]
                 if 'button_raw' in raw.columns:
                     self.button_raw = self.button_raw[np.invert(idx)]
+                self.surface_imperfection = self.surface_imperfection[np.invert(idx)]
+                self.tephra_or_layer = self.tephra_or_layer[np.invert(idx)]
+                self.rock_or_debris = self.rock_or_debris[np.invert(idx)]
         
         # assign status
         self.issmoothed = False
@@ -93,6 +104,9 @@ class ECM:
         depth_smooth = []
         meas_smooth = []
         button_smooth = []
+        surface_imperfection_smooth = []
+        tephra_or_layer_smooth = []
+        rock_or_debris_smooth = []
         y_smooth = []
         
         # loop through all tracks
@@ -104,7 +118,9 @@ class ECM:
             dtrack = self.depth[idx]
             mtrack = self.meas[idx]
             btrack = self.button[idx]
-            
+            strack = self.surface_imperfection[idx]
+            ttrack = self.tephra_or_layer[idx]
+            rtrack = self.rock_or_debris[idx]
             # loop through all depths
             for d in depth_vec:
                 
@@ -119,12 +135,18 @@ class ECM:
                     button_smooth.append(1)
                 else:
                     button_smooth.append(0)
-                
+                surface_imperfection_smooth.append(np.median(strack[didx]))
+                tephra_or_layer_smooth.append(np.median(ttrack[didx]))
+                rock_or_debris_smooth.append(np.median(rtrack[didx]))
+
         # save smooth values
         self.depth_s = np.flip(np.array(depth_smooth))
         self.meas_s = np.flip(np.array(meas_smooth))
         self.button_s = np.flip(np.array(button_smooth))
         self.y_s = np.flip(np.array(y_smooth))
+        self.surface_imperfection_s = np.flip(np.array(surface_imperfection_smooth))
+        self.tephra_or_layer_s = np.flip(np.array(tephra_or_layer_smooth))
+        self.rock_or_debris_s = np.flip(np.array(rock_or_debris_smooth))
         
         self.issmoothed = True
         
@@ -141,6 +163,9 @@ class ECM:
         self.meas = self.meas[idx]
         self.y = self.y[idx]
         self.button = self.button[idx]
+        self.surface_imperfection = self.surface_imperfection[idx]
+        self.tephra_or_layer = self.tephra_or_layer[idx]
+        self.rock_or_debris = self.rock_or_debris[idx]
         self.depth = self.depth[idx]
         
         
@@ -156,7 +181,9 @@ class ECM:
             self.y_s = self.y_s[idx]
             self.button_s = self.button_s[idx]
             self.depth_s = self.depth_s[idx]
-            
+            self.surface_imperfection_s = self.surface_imperfection_s[idx]
+            self.tephra_or_layer_s = self.tephra_or_layer_s[idx]
+            self.rock_or_debris_s = self.rock_or_debris_s[idx]
     
     # normalize outside magnitude to match inner tracks
     def norm_outside(self):

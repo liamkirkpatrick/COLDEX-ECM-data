@@ -168,7 +168,6 @@ def process_ecm(entry, entry_number, total_entries):
     tephra_or_layer = np.zeros(len(d.button), dtype=int)
     rock_or_debris = np.zeros(len(d.button), dtype=int)
 
-
     # Build DataFrame
     df = pd.DataFrame({
         'True_depth(m)': depth,
@@ -185,6 +184,9 @@ def process_ecm(entry, entry_number, total_entries):
         'Y_dimension(mm)': y_s,
         'meas': meas_s,
         'button': button_s,
+        'surface_imperfection': np.zeros(len(d.button_s), dtype=int),
+        'tephra_or_layer': np.zeros(len(d.button_s), dtype=int),
+        'rock_or_debris': np.zeros(len(d.button_s), dtype=int)
     })
 
     # Filename for saving

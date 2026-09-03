@@ -214,6 +214,10 @@ def process_ecm(entry, entry_number, total_entries):
     ax_dc_right = fig.add_subplot(gs[0, 4], sharey=ax_ac_left)
     ax_gap.axis('off')
 
+    # make x-values increase to the left in the ac_left and dc_left axes
+    ax_ac_left.invert_xaxis()
+    ax_dc_left.invert_xaxis()
+
     pair_axes = {
         'AC': (ax_ac_left, ax_ac_right),
         'DC': (ax_dc_left, ax_dc_right),

@@ -152,7 +152,8 @@ def process_ecm(entry, entry_number, total_entries):
     depth = d.depth
     y = d.y
     meas = d.meas
-    if d.button_raw is not None:
+
+    if hasattr(d, 'button_raw') and d.button_raw is not None:
         button = d.button_raw
     else:
         button = d.button

@@ -2,6 +2,8 @@ name: COLDEX_ECM
 channels:
   - defaults
 dependencies:
+  - tqdm
+  - ipywidgets
   - aom=3.6.0=hcec6c5f_0
   - blas=1.0=openblas
   - bottleneck=1.4.2=py313ha0efc16_0

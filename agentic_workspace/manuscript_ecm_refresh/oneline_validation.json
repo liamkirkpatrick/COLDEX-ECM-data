@@ -1,0 +1,42 @@
+[
+  {
+    "core": "ALHIC2301",
+    "rows": 3512,
+    "changed_bins": {
+      "AC": 187,
+      "DC": 480
+    },
+    "missing_AC": 1067,
+    "missing_DC": 1109
+  },
+  {
+    "core": "ALHIC2416",
+    "rows": 1644,
+    "changed_bins": {
+      "AC": 165,
+      "DC": 53
+    },
+    "missing_AC": 398,
+    "missing_DC": 400
+  },
+  {
+    "core": "ALHIC2401",
+    "rows": 3071,
+    "changed_bins": {
+      "AC": 75,
+      "DC": 54
+    },
+    "missing_AC": 587,
+    "missing_DC": 595
+  },
+  {
+    "core": "ALHIC2502",
+    "rows": 7774,
+    "changed_bins": {
+      "AC": 90,
+      "DC": 97
+    },
+    "missing_AC": 5287,
+    "missing_DC": 5291
+  }
+]

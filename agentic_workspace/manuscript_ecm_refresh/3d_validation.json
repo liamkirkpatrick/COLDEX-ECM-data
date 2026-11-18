@@ -1,0 +1,25 @@
+[
+  {
+    "core": "ALHIC2502",
+    "sources": {
+      "not-cleaned": 53,
+      "clean": 13
+    },
+    "section_status": {
+      "ok": 28,
+      "insufficient_pairs": 5
+    },
+    "changed_dip_estimates": 7
+  },
+  {
+    "core": "ALHIC2401",
+    "sources": {
+      "clean": 78
+    },
+    "section_status": {
+      "ok": 33,
+      "insufficient_pairs": 6
+    },
+    "changed_dip_estimates": 6
+  }
+]

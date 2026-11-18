@@ -109,6 +109,8 @@ meta_core = meta_core[
     (meta_core['section_num'] >= start_section) &
     (meta_core['section_num'] <= end_section)
 ]
+# Process sections numerically, preserving metadata order within each section.
+meta_core = meta_core.sort_values('section_num', kind='stable')
 
 if meta_core.empty:
     print("No metadata rows matched the selected core and section range.")
